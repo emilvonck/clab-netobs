@@ -1,0 +1,13 @@
+router ospf 1
+ router-id 1.1.1.1
+ passive-interface Ethernet0/2
+!
+interface Ethernet0/1
+ ip address 192.0.2.0 255.255.255.254
+ ip ospf network point-to-point
+ ip ospf 1 area 0
+ no shutdown
+interface Ethernet0/2
+ ip address 20.20.20.1 255.255.255.0
+ ip ospf 1 area 0
+ no shutdown

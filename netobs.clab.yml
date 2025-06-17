@@ -1,0 +1,59 @@
+name: netobs
+prefix: ""
+mgmt:
+  network: netobs
+  ipv4-subnet: 198.51.100.0/24
+
+topology:
+  nodes:
+    core1:
+      kind: cisco_iol
+      image: vrnetlab/cisco_iol:17.15.01
+      mgmt-ipv4: 198.51.100.11
+      startup-config: ./configs/core1.txt.partial
+    dc1:
+      kind: cisco_iol
+      image: vrnetlab/cisco_iol:17.15.01
+      mgmt-ipv4: 198.51.100.12
+      startup-config: ./configs/dc1.txt.partial
+    branch1:
+      kind: cisco_iol
+      image: vrnetlab/cisco_iol:17.15.01
+      mgmt-ipv4: 198.51.100.21
+      startup-config: ./configs/branch1.txt.partial
+    client1:
+      kind: linux
+      image: ghcr.io/srl-labs/network-multitool
+      mgmt-ipv4: 198.51.100.22
+      exec:
+        - ip address add 11.11.11.11/24 dev eth1
+        - ip route add 20.20.20.0/24 via 11.11.11.1 dev eth1
+    branch2:
+      kind: cisco_iol
+      image: vrnetlab/cisco_iol:17.15.01
+      mgmt-ipv4: 198.51.100.31
+      startup-config: ./configs/branch2.txt.partial
+    client2:
+      kind: linux
+      image: ghcr.io/srl-labs/network-multitool
+      mgmt-ipv4: 198.51.100.32
+      exec:
+        - ip address add 12.12.12.12/24 dev eth1
+        - ip route add 20.20.20.0/24 via 12.12.12.1 dev eth1
+    telegraf:
+      kind: linux
+      image: telegraf:graphql
+      binds:
+        - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      exec:
+        - ip address add 20.20.20.20/24 dev eth1
+        - ip route add 11.11.11.0/24 via 20.20.20.1 dev eth1
+        - ip route add 12.12.12.0/24 via 20.20.20.1 dev eth1
+  links:
+    - endpoints: ["core1:Ethernet0/1", "dc1:Ethernet0/1"]
+    - endpoints: ["dc1:Ethernet0/2", "telegraf:eth1"]
+    - endpoints: ["branch1:Ethernet0/1", "core1:Ethernet0/2"]
+    - endpoints: ["branch1:Ethernet0/2", "client1:eth1"]
+    - endpoints: ["branch2:Ethernet0/1", "core1:Ethernet0/3"]
+    - endpoints: ["branch2:Ethernet0/2", "client2:eth1"]
+
