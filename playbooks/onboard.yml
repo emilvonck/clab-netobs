@@ -1,0 +1,124 @@
+- name: Onboard clab into Netbox
+  hosts: cisco_iol
+  gather_facts: false
+  connection: local
+  vars:
+    netbox_url: "http://netbox:8080"
+    netbox_token: 0123456789abcdef0123456789abcdef01234567
+    netbox_device_role: "router"
+    netbox_device_type: "cisco_iol"
+    netbox_device_manufacturer: "clab"
+    netbox_site:
+      branch1: # Sweden
+        name: "Sweden"
+        slug: "sweden"
+        latitude: 62.198336
+        longitude: 17.567198
+      branch2: # Finland
+        name: "Finland"
+        slug: "finland"
+        latitude: 64.914665
+        longitude: 26.067255
+      core1: # Norway
+        name: "Norway"
+        slug: "norway"
+        latitude: 60.999754
+        longitude: 9.046155
+      dc1: # Denmark
+        name: "Denmark"
+        slug: "denmark"
+        latitude: 56.204949
+        longitude: 8.899277
+  tasks:
+    - name: Create Netbox Site
+      uri:
+        url: "{{ netbox_url }}/api/dcim/sites/"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Token {{ netbox_token }}"
+        body: |
+          {
+            "name": "{{ netbox_site[inventory_hostname]['name'] }}",
+            "slug": "{{ netbox_site[inventory_hostname]['slug'] }}",
+            "latitude" : {{ netbox_site[inventory_hostname]['latitude'] }},
+            "longitude" : {{ netbox_site[inventory_hostname]['longitude'] }}
+          }
+        body_format: json
+        return_content: yes
+        status_code: 201
+      register: site_result
+
+    - name: Create Netbox Manufacturer
+      uri:
+        url: "{{ netbox_url }}/api/dcim/manufacturers/"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Token {{ netbox_token }}"
+        body: |
+          {
+            "name": "{{ netbox_device_manufacturer }}",
+            "slug": "{{ netbox_device_manufacturer }}",
+          }
+        body_format: json
+        return_content: yes
+        status_code: 201
+      run_once: true
+      register: manufacturer_result
+
+    - name: Create Netbox Device Roles
+      uri:
+        url: "{{ netbox_url }}/api/dcim/device-roles/"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Token {{ netbox_token }}"
+        body: |
+          {
+            "name": "{{ netbox_device_role }}",
+            "slug": "{{ netbox_device_role }}",
+          }
+        body_format: json
+        return_content: yes
+        status_code: 201
+      run_once: true
+      register: role_result
+
+    - name: Create Netbox Device Types
+      uri:
+        url: "{{ netbox_url }}/api/dcim/device-types/"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Token {{ netbox_token }}"
+        body: |
+          {
+            "manufacturer": "{{ manufacturer_result.json.id }}",
+            "model": "{{ netbox_device_type }}",
+            "slug": "{{ netbox_device_role }}",
+          }
+        body_format: json
+        return_content: yes
+        status_code: 201
+      run_once: true
+      register: type_result
+
+    - name: Create Netbox Devices
+      uri:
+        url: "{{ netbox_url }}/api/dcim/devices/"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Token {{ netbox_token }}"
+        body: |
+          {
+            "name": "{{ inventory_hostname }}",
+            "device_type": "{{ type_result.json.id }}",
+            "role": "{{ role_result.json.id }}",
+            "site": "{{ site_result.json.id }}",
+          }
+        body_format: json
+        return_content: yes
+        status_code: 201
+      register: device_result
