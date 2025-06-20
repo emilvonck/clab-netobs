@@ -9,7 +9,7 @@ telegraf:graphql -> https://github.com/emilvonck/telegraf/tree/graphql
 
 ## Add override to netbox
 ```bash
-tee docker-compose.override.yml <<EOF
+tee ./netbox-docker/docker-compose.override.yml <<EOF
 services:
   netbox:
     networks:

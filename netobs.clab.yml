@@ -52,6 +52,7 @@ topology:
         - ip address add 20.20.20.20/24 dev eth1
         - ip route add 11.11.11.0/24 via 20.20.20.1 dev eth1
         - ip route add 12.12.12.0/24 via 20.20.20.1 dev eth1
+      mgmt-ipv4: 198.51.100.52
     grafana:
       kind: linux
       image: grafana/grafana:11.6.1
@@ -68,6 +69,15 @@ topology:
       binds:
         - ./influxdb-v2/scripts:/docker-entrypoint-initdb.d:ro
       mgmt-ipv4: 198.51.100.51
+
+    syslog-ng:
+      kind: linux
+      image: balabit/syslog-ng:latest
+      exec:
+        - -edv
+      binds:
+        - ./syslog-ng/syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf:ro
+      mgmt-ipv4: 198.51.100.53
   links:
     - endpoints: ["core1:Ethernet0/1", "dc1:Ethernet0/1"]
     - endpoints: ["dc1:Ethernet0/2", "telegraf:eth1"]

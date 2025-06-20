@@ -16,3 +16,10 @@ interface Ethernet0/3
  ip ospf network point-to-point
  ip ospf 1 area 0
  no shutdown
+!
+logging on
+logging trap syslog-format rfc5424
+logging trap informational
+logging origin-id hostname
+logging source-interface Ethernet0/0 vrf clab-mgmt
+logging host 198.51.100.53 vrf clab-mgmt transport udp port 514
