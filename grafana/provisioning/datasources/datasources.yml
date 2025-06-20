@@ -12,3 +12,9 @@ datasources:
       tlsSkipVerify: true
     secureJsonData:
       token: ${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+  - name: Loki
+    type: loki
+    url: http://loki:3100
+    jsonData:
+      timeout: 60
+      maxLines: 1000
