@@ -73,8 +73,6 @@ topology:
     syslog-ng:
       kind: linux
       image: balabit/syslog-ng:latest
-      exec:
-        - -edv
       binds:
         - ./syslog-ng/syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf:ro
       mgmt-ipv4: 198.51.100.53

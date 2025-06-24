@@ -1,6 +1,6 @@
 .PHONY: all deploy netbox ansible destroy
 
-all: setup netbox ansible deploy
+all: destroy setup netbox ansible deploy
 
 setup:
 	docker network create netobs --subnet 198.51.100.0/24
@@ -22,3 +22,4 @@ ansible:
 destroy:
 	cd netbox-docker && docker compose down -v
 	clab destroy
+	docker network rm netobs || true
